@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Fruit Merge Drop</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    
+    body {
+      margin: 0; 
+      padding: 20px;
+      display: flex; 
+      flex-direction: column;
+      justify-content: center; 
+      align-items: center;
+      min-height: 100vh; 
+      background: linear-gradient(135deg, #ffe6f0, #d1f4ff);
+      font-family: 'Poppins', sans-serif;
+      overflow-x: hidden;
+    }
+    
+    .game-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      max-width: 500px;
+      width: 100%;
+    }
+    
+    .header {
+      text-align: center;
+      margin-bottom: 15px;
+      width: 100%;
+    }
+    
+    h1 {
+      margin: 10px 0; 
+      color: #ff4081;
+      text-shadow: 2px 2px #fff;
+      font-size: 2.2rem;
+    }
+    
+    .score-board {
+      background: rgba(255, 255, 255, 0.8);
+      padding: 10px 20px;
+      border-radius: 20px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+      margin-bottom: 10px;
+      font-weight: bold;
+      font-size: 1.2rem;
+      color: #333;
+    }
+    
+    .next-fruit {
+      background: rgba(255, 255, 255, 0.8);
+      padding: 10px;
+      border-radius: 15px;
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    }
+    
+    .next-fruit span {
+      font-size: 1.1rem;
+      font-weight: 500;
+    }
+    
+    #nextFruitEmoji {
+      font-size: 1.8rem;
+    }
+    
+    canvas {
+      background: #fff;
+      border: 5px solid #ff80ab;
+      border-radius: 15px;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+      width: 100%;
+      max-width: 400px;
+    }
+    
+    .instructions {
+      margin-top: 15px;
+      text-align: center;
+      max-width: 400px;
+    }
+    
+    .fruit-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      margin-top: 15px;
+      background: rgba(255, 255, 255, 0.8);
+      padding: 15px;
+      border-radius: 15px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    }
+    
+    .fruit-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 5px;
+    }
+    
+    .fruit-emoji {
+      font-size: 1.8rem;
+    }
+    
+    .fruit-name {
+      font-size: 0.8rem;
+      text-align: center;
+      margin-top: 5px;
+    }
+    
+    .merge-arrow {
+      font-size: 1.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100%;
+    }
+    
+    footer {
+      margin-top: 15px;
+      font-size: 0.9rem; 
+      color: #444;
+      text-align: center;
+    }
+    
+    @media (max-width: 500px) {
+      h1 {
+        font-size: 1.8rem;
+      }
+      
+      .fruit-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="game-container">
+    <div class="header">
+      <h1>🍓 Fruit Merge Drop 🍍</h1>
+      <div class="score-board">Score: <span id="score">0</span></div>
+      <div class="next-fruit">
+        <span>Next fruit:</span>
+        <span id="nextFruitEmoji">🍒</span>
+      </div>
+    </div>
+    
+    <canvas id="gameCanvas"></canvas>
+    
+    <div class="instructions">
+      <p>Click to drop fruits from the top! Merge matching fruits to create new ones.</p>
+    </div>
+    
+    <div class="fruit-grid">
+      <div class="fruit-item">
+        <div class="fruit-emoji">🍒</div>
+        <div class="fruit-name">Cherry</div>
+      </div>
+      <div class="merge-arrow">+ ➡️</div>
+      <div class="fruit-item">
+        <div class="fruit-emoji">🍋</div>
+        <div class="fruit-name">Lemon</div>
+      </div>
+      
+      <div class="fruit-item">
+        <div class="fruit-emoji">🍋</div>
+        <div class="fruit-name">Lemon</div>
+      </div>
+      <div class="merge-arrow">+ ➡️</div>
+      <div class="fruit-item">
+        <div class="fruit-emoji">🍎</div>
+        <div class="fruit-name">Apple</div>
+      </div>
+      
+      <div class="fruit-item">
+        <div class="fruit-emoji">🍎</div>
+        <div class="fruit-name">Apple</div>
+      </div>
+      <div class="merge-arrow">+ ➡️</div>
+      <div class="fruit-item">
+        <div class="fruit-emoji">🍇</div>
+        <div class="fruit-name">Grapes</div>
+      </div>
+      
+      <div class="fruit-item">
+        <div class="fruit-emoji">🍇</div>
+        <div class="fruit-name">Grapes</div>
+      </div>
+      <div class="merge-arrow">+ ➡️</div>
+      <div class="fruit-item">
+        <div class="fruit-emoji">🥝</div>
+        <div class="fruit-name">Kiwi</div>
+      </div>
+      
+      <div class="fruit-item">
+        <div class="fruit-emoji">🥝</div>
+        <div class="fruit-name">Kiwi</div>
+      </div>
+      <div class="merge-arrow">+ ➡️</div>
+      <div class="fruit-item">
+        <div class="fruit-emoji">🍍</div>
+        <div class="fruit-name">Pineapple</div>
+      </div>
+      
+      <div class="fruit-item">
+        <div class="fruit-emoji">🍍</div>
+        <div class="fruit-name">Pineapple</div>
+      </div>
+      <div class="merge-arrow">+ ➡️</div>
+      <div class="fruit-item">
+        <div class="fruit-emoji">🥭</div>
+        <div class="fruit-name">Mango</div>
+      </div>
+      
+      <div class="fruit-item">
+        <div class="fruit-emoji">🥭</div>
+        <div class="fruit-name">Mango</div>
+      </div>
+      <div class="merge-arrow">+ ➡️</div>
+      <div class="fruit-item">
+        <div class="fruit-emoji">🍉</div>
+        <div class="fruit-name">Watermelon</div>
+      </div>
+      
+      <div class="fruit-item">
+        <div class="fruit-emoji">🍉</div>
+        <div class="fruit-name">Watermelon</div>
+      </div>
+      <div class="merge-arrow">+ ➡️</div>
+      <div class="fruit-item">
+        <div class="fruit-emoji">🍓</div>
+        <div class="fruit-name">Strawberry</div>
+      </div>
+    </div>
+  </div>
+  
+  <footer>Tap / Click to drop fruits from the top!</footer>
+
+  <script>
+    const canvas = document.getElementById("gameCanvas");
+    const ctx = canvas.getContext("2d");
+    let W = Math.min(window.innerWidth * 0.9, 400);
+    let H = W * 1.4; // Increased height for better gameplay
+    canvas.width = W; 
+    canvas.height = H;
+
+    let score = 0;
+    const scoreEl = document.getElementById("score");
+    const nextFruitEmoji = document.getElementById("nextFruitEmoji");
+
+    // Fruit list (radius + emoji)
+    const fruits = [
+      {r:20, emoji:"🍒", name:"Cherry"},
+      {r:25, emoji:"🍋", name:"Lemon"},
+      {r:30, emoji:"🍎", name:"Apple"},
+      {r:35, emoji:"🍇", name:"Grapes"},
+      {r:40, emoji:"🥝", name:"Kiwi"},
+      {r:45, emoji:"🍍", name:"Pineapple"},
+      {r:50, emoji:"🥭", name:"Mango"},
+      {r:55, emoji:"🍉", name:"Watermelon"},
+      {r:65, emoji:"🍓", name:"Strawberry"}
+    ];
+
+    let balls = [];
+    let nextFruit = 0; // index of next fruit
+
+    function randomFruit(){
+      return Math.floor(Math.random()*3); // only small fruits first
+    }
+
+    function spawnFruit(){
+      let f = fruits[nextFruit];
+      balls.push({
+        x: Math.random() * (W - f.r * 2) + f.r, // Random x position at top
+        y: f.r, 
+        r: f.r, 
+        vx: (Math.random() - 0.5) * 2, // Slight random horizontal velocity
+        vy: 0, 
+        emoji: f.emoji, 
+        type: nextFruit
+      });
+      nextFruit = randomFruit();
+      nextFruitEmoji.textContent = fruits[nextFruit].emoji;
+    }
+
+    function update(){
+      ctx.clearRect(0,0,W,H);
+      ctx.fillStyle = "#fff";
+      ctx.fillRect(0,0,W,H);
+
+      // Box border
+      ctx.strokeStyle="#ff80ab";
+      ctx.lineWidth=4;
+      ctx.strokeRect(0,0,W,H);
+
+      // Update physics
+      for (let i = 0; i < balls.length; i++) {
+        let b = balls[i];
+        b.vy += 0.3; // gravity
+        b.x += b.vx;
+        b.y += b.vy;
+
+        // Floor
+        if(b.y + b.r > H){
+          b.y = H - b.r;
+          b.vy *= -0.5;
+          b.vx *= 0.9; // Friction
+        }
+        // Walls
+        if(b.x - b.r < 0){
+          b.x = b.r; 
+          b.vx *= -0.5;
+        }
+        if(b.x + b.r > W){
+          b.x = W - b.r; 
+          b.vx *= -0.5;
+        }
+      }
+
+      // Collision + merge
+      for(let i = 0; i < balls.length; i++){
+        for(let j = i + 1; j < balls.length; j++){
+          let a = balls[i], b = balls[j];
+          let dx = b.x - a.x, dy = b.y - a.y;
+          let dist = Math.sqrt(dx*dx+dy*dy);
+          
+          if(dist < a.r + b.r){
+            let overlap = (a.r + b.r) - dist;
+            let nx = dx/dist, ny = dy/dist;
+            
+            // Separate the balls
+            a.x -= nx * overlap/2;
+            a.y -= ny * overlap/2;
+            b.x += nx * overlap/2;
+            b.y += ny * overlap/2;
+            
+            // Bounce effect
+            let dotProduct1 = a.vx * nx + a.vy * ny;
+            let dotProduct2 = b.vx * nx + b.vy * ny;
+            
+            a.vx += (dotProduct2 - dotProduct1) * nx * 0.7;
+            a.vy += (dotProduct2 - dotProduct1) * ny * 0.7;
+            b.vx += (dotProduct1 - dotProduct2) * nx * 0.7;
+            b.vy += (dotProduct1 - dotProduct2) * ny * 0.7;
+
+            // Merge same fruits
+            if(a.type === b.type && a.type < fruits.length - 1){
+              // Remove both fruits
+              balls.splice(j, 1);
+              balls.splice(i, 1);
+              
+              // Create new merged fruit
+              let nf = fruits[a.type + 1];
+              let newX = (a.x + b.x) / 2;
+              let newY = (a.y + b.y) / 2;
+              
+              balls.push({
+                x: newX, 
+                y: newY, 
+                r: nf.r, 
+                vx: (a.vx + b.vx) * 0.5, 
+                vy: (a.vy + b.vy) * 0.5, 
+                emoji: nf.emoji, 
+                type: a.type + 1
+              });
+              
+              // Update score
+              score += (a.type + 1) * 10;
+              scoreEl.textContent = score;
+              
+              break;
+            }
+          }
+        }
+      }
+
+      // Draw fruits
+      balls.forEach(b => {
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        ctx.font = (b.r * 1.8) + "px Arial";
+        ctx.fillText(b.emoji, b.x, b.y);
+      });
+
+      requestAnimationFrame(update);
+    }
+
+    canvas.addEventListener("click", () => { 
+      spawnFruit(); 
+    });
+
+    // Initialize next fruit display
+    nextFruit = randomFruit();
+    nextFruitEmoji.textContent = fruits[nextFruit].emoji;
+    
+    update();
+  </script>
+</body>
+</html>

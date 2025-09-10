@@ -1,0 +1,989 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>UNO Game</title>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      background: linear-gradient(135deg, #2c3e50, #1a1a2e);
+      color: #fff;
+      font-family: 'Nunito', sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 20px;
+      overflow-x: hidden;
+    }
+    
+    .container {
+      width: 100%;
+      max-width: 1000px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    
+    header {
+      text-align: center;
+      margin-bottom: 20px;
+      width: 100%;
+    }
+    
+    h1 {
+      font-size: 3rem;
+      margin-bottom: 10px;
+      background: linear-gradient(45deg, #ff6b6b, #4ecdc4, #ffd166);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+    }
+    
+    /* Player selection screen */
+    .player-selection {
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 20px;
+      padding: 30px;
+      text-align: center;
+      margin: 20px 0;
+      width: 100%;
+      max-width: 500px;
+      backdrop-filter: blur(10px);
+    }
+    
+    .player-selection h2 {
+      margin-bottom: 20px;
+      color: #ffd166;
+    }
+    
+    .player-options {
+      display: flex;
+      justify-content: center;
+      gap: 15px;
+      flex-wrap: wrap;
+      margin-bottom: 25px;
+    }
+    
+    .player-option {
+      background: rgba(255, 255, 255, 0.15);
+      border-radius: 15px;
+      padding: 15px;
+      cursor: pointer;
+      transition: all 0.3s;
+      width: 100px;
+    }
+    
+    .player-option:hover {
+      transform: translateY(-5px);
+      background: rgba(255, 255, 255, 0.25);
+    }
+    
+    .player-option.selected {
+      background: linear-gradient(135deg, #ff6b6b, #7b68ee);
+      transform: translateY(-5px);
+    }
+    
+    .player-option i {
+      font-size: 2rem;
+      margin-bottom: 10px;
+    }
+    
+    .start-btn {
+      padding: 12px 30px;
+      background: linear-gradient(135deg, #52b788, #40916c);
+      border: none;
+      border-radius: 50px;
+      color: white;
+      font-weight: 700;
+      font-size: 1.1rem;
+      cursor: pointer;
+      transition: all 0.3s;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+    }
+    
+    .start-btn:hover {
+      transform: scale(1.05);
+      box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+    }
+    
+    /* Game board */
+    .game-board {
+      display: none;
+      width: 100%;
+    }
+    
+    .game-info {
+      display: flex;
+      justify-content: space-between;
+      width: 100%;
+      margin-bottom: 20px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 15px;
+      padding: 15px;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+    }
+    
+    .player-info {
+      text-align: center;
+      padding: 10px;
+      border-radius: 10px;
+      transition: all 0.3s;
+    }
+    
+    .player-info.active {
+      background: rgba(255, 255, 255, 0.2);
+      box-shadow: 0 0 15px rgba(255, 215, 0, 0.5);
+    }
+    
+    .player-name {
+      font-weight: 700;
+      font-size: 1rem;
+      margin-bottom: 5px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 5px;
+    }
+    
+    .card-count {
+      font-size: 1.5rem;
+      font-weight: 800;
+    }
+    
+    .game-area {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin-bottom: 20px;
+      position: relative;
+    }
+    
+    /* Computer players */
+    .computer-player {
+      display: flex;
+      justify-content: center;
+      width: 100%;
+      margin: 15px 0;
+    }
+    
+    .computer-player.left {
+      justify-content: flex-start;
+      padding-left: 50px;
+    }
+    
+    .computer-player.right {
+      justify-content: flex-end;
+      padding-right: 50px;
+    }
+    
+    .computer-cards {
+      display: flex;
+    }
+    
+    .computer-card {
+      width: 20px;
+      height: 30px;
+      background: linear-gradient(135deg, #6a11cb, #2575fc);
+      border-radius: 4px;
+      margin: 0 -8px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    }
+    
+    /* Center play area */
+    .center-area {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      margin: 20px 0;
+      position: relative;
+      width: 300px;
+      height: 200px;
+    }
+    
+    .deck {
+      width: 80px;
+      height: 120px;
+      background: linear-gradient(135deg, #6a11cb, #2575fc);
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+      cursor: pointer;
+      position: absolute;
+      left: 0;
+      z-index: 5;
+    }
+    
+    .deck::after {
+      content: "UNO";
+      color: white;
+      font-weight: 800;
+      font-size: 1.5rem;
+    }
+    
+    .pile {
+      width: 80px;
+      height: 120px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+      font-size: 28px;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+      position: absolute;
+      right: 0;
+      z-index: 5;
+      transition: transform 0.3s ease;
+    }
+    
+    .pile.red { background: linear-gradient(to bottom, #ff6b6b, #e63946); }
+    .pile.green { background: linear-gradient(to bottom, #52b788, #40916c); }
+    .pile.blue { background: linear-gradient(to bottom, #4cc9f0, #4895ef); }
+    .pile.yellow { background: linear-gradient(to bottom, #ffd166, #ffb74d); color: #333; }
+    .pile.wild { background: linear-gradient(45deg, #ff6b6b, #4ecdc4, #ffd166, #6a11cb); color: white; }
+    
+    .current-color {
+      position: absolute;
+      bottom: -25px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 0.9rem;
+      font-weight: 700;
+      padding: 3px 10px;
+      border-radius: 15px;
+      background: rgba(0,0,0,0.7);
+    }
+    
+    /* Player hand */
+    .player-hand {
+      width: 100%;
+      margin-top: 20px;
+    }
+    
+    .hand-title {
+      font-size: 1.2rem;
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+    }
+    
+    .cards-container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      justify-content: center;
+      min-height: 140px;
+    }
+    
+    .card {
+      width: 70px;
+      height: 110px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+      font-size: 22px;
+      cursor: pointer;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+      position: relative;
+    }
+    
+    .card:hover {
+      transform: translateY(-10px);
+      box-shadow: 0 8px 16px rgba(0,0,0,0.3);
+    }
+    
+    .card.red { background: linear-gradient(to bottom, #ff6b6b, #e63946); color: white; }
+    .card.green { background: linear-gradient(to bottom, #52b788, #40916c); color: white; }
+    .card.blue { background: linear-gradient(to bottom, #4cc9f0, #4895ef); color: white; }
+    .card.yellow { background: linear-gradient(to bottom, #ffd166, #ffb74d); color: #333; }
+    .card.wild { background: linear-gradient(45deg, #ff6b6b, #4ecdc4, #ffd166, #6a11cb); color: white; }
+    
+    .card .card-value {
+      font-size: 28px;
+      font-weight: 800;
+    }
+    
+    .controls {
+      display: flex;
+      gap: 15px;
+      margin-top: 20px;
+    }
+    
+    button {
+      padding: 12px 25px;
+      border: none;
+      border-radius: 50px;
+      font-family: 'Nunito', sans-serif;
+      font-size: 1rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    
+    button:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+    }
+    
+    button:active {
+      transform: translateY(0);
+    }
+    
+    #drawBtn {
+      background: linear-gradient(135deg, #6a11cb, #2575fc);
+      color: white;
+    }
+    
+    #unoBtn {
+      background: linear-gradient(135deg, #ff6b6b, #e63946);
+      color: white;
+    }
+    
+    #restartBtn {
+      background: linear-gradient(135deg, #52b788, #40916c);
+      color: white;
+    }
+    
+    .message {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: rgba(0,0,0,0.9);
+      padding: 20px 40px;
+      border-radius: 15px;
+      font-size: 2rem;
+      font-weight: 800;
+      z-index: 100;
+      box-shadow: 0 5px 30px rgba(0,0,0,0.5);
+      display: none;
+    }
+    
+    /* Card throwing animation */
+    @keyframes throwCard {
+      0% { transform: translate(0, 0) rotate(0deg); }
+      50% { transform: translate(var(--throwX), var(--throwY)) rotate(var(--throwRotate)); }
+      100% { transform: translate(0, 0) rotate(0deg); }
+    }
+    
+    .throwing {
+      animation: throwCard 0.8s ease;
+      z-index: 10;
+    }
+    
+    /* Mobile Responsiveness */
+    @media (max-width: 768px) {
+      h1 {
+        font-size: 2.2rem;
+      }
+      
+      .game-info {
+        flex-wrap: wrap;
+        gap: 10px;
+      }
+      
+      .player-info {
+        flex: 1;
+        min-width: 120px;
+      }
+      
+      .card {
+        width: 60px;
+        height: 95px;
+        font-size: 20px;
+      }
+      
+      .deck, .pile {
+        width: 70px;
+        height: 105px;
+      }
+      
+      .center-area {
+        width: 250px;
+      }
+      
+      .controls {
+        flex-wrap: wrap;
+        justify-content: center;
+      }
+      
+      button {
+        padding: 10px 20px;
+        font-size: 0.9rem;
+      }
+      
+      .computer-player.left {
+        padding-left: 20px;
+      }
+      
+      .computer-player.right {
+        padding-right: 20px;
+      }
+    }
+    
+    @media (max-width: 480px) {
+      h1 {
+        font-size: 1.8rem;
+      }
+      
+      .card {
+        width: 50px;
+        height: 80px;
+        font-size: 18px;
+      }
+      
+      .deck, .pile {
+        width: 60px;
+        height: 90px;
+      }
+      
+      .center-area {
+        width: 200px;
+        height: 150px;
+      }
+      
+      .card .card-value {
+        font-size: 22px;
+      }
+      
+      .player-selection {
+        padding: 20px;
+      }
+      
+      .player-option {
+        width: 80px;
+        padding: 10px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1><i class="fas fa-dice"></i> UNO Card Game</h1>
+    </header>
+    
+    <!-- Player Selection Screen -->
+    <div class="player-selection" id="playerSelection">
+      <h2>Select Number of Computer Players</h2>
+      <div class="player-options">
+        <div class="player-option" data-players="1">
+          <i class="fas fa-robot"></i>
+          <div>1 Computer</div>
+        </div>
+        <div class="player-option" data-players="2">
+          <i class="fas fa-robot"></i>
+          <i class="fas fa-robot"></i>
+          <div>2 Computers</div>
+        </div>
+        <div class="player-option" data-players="3">
+          <i class="fas fa-robot"></i>
+          <i class="fas fa-robot"></i>
+          <i class="fas fa-robot"></i>
+          <div>3 Computers</div>
+        </div>
+      </div>
+      <button class="start-btn" id="startBtn">Start Game</button>
+    </div>
+    
+    <!-- Game Board -->
+    <div class="game-board" id="gameBoard">
+      <div class="game-info" id="gameInfo">
+        <!-- Player info will be added dynamically -->
+      </div>
+      
+      <div class="game-area">
+        <!-- Top computer player -->
+        <div class="computer-player" id="computerPlayer1">
+          <div class="computer-cards" id="computerCards1">
+            <!-- Computer cards will be added dynamically -->
+          </div>
+        </div>
+        
+        <!-- Left and right computer players -->
+        <div style="display: flex; justify-content: space-between; width: 100%;">
+          <div class="computer-player left" id="computerPlayer2">
+            <div class="computer-cards" id="computerCards2">
+              <!-- Computer cards will be added dynamically -->
+            </div>
+          </div>
+          
+          <div class="computer-player right" id="computerPlayer3">
+            <div class="computer-cards" id="computerCards3">
+              <!-- Computer cards will be added dynamically -->
+            </div>
+          </div>
+        </div>
+        
+        <!-- Center play area -->
+        <div class="center-area">
+          <div class="deck" id="deck"></div>
+          <div class="pile red" id="pile">
+            <div class="card-value">7</div>
+            <div class="current-color">RED</div>
+          </div>
+        </div>
+        
+        <!-- Player hand -->
+        <div class="player-hand">
+          <div class="hand-title">
+            <i class="fas fa-user"></i> Your Hand
+          </div>
+          <div class="cards-container" id="playerHand"></div>
+        </div>
+      </div>
+      
+      <div class="controls">
+        <button id="drawBtn" onclick="drawCard()">
+          <i class="fas fa-plus"></i> Draw Card
+        </button>
+        <button id="unoBtn" onclick="callUno()">
+          <i class="fas fa-exclamation"></i> UNO!
+        </button>
+        <button id="restartBtn" onclick="restartGame()">
+          <i class="fas fa-redo"></i> Restart Game
+        </button>
+      </div>
+    </div>
+  </div>
+  
+  <div class="message" id="message"></div>
+
+  <script>
+    const colors = ["red", "green", "blue", "yellow"];
+    const specialCards = ["skip", "reverse", "draw2"];
+    let deck = [];
+    let players = [];
+    let pile;
+    let currentPlayerIndex = 0;
+    let gameDirection = 1;
+    let computerPlayersCount = 1;
+    let gameActive = false;
+
+    // Initialize the game
+    function initGame() {
+      // Setup player selection
+      const playerOptions = document.querySelectorAll('.player-option');
+      playerOptions.forEach(option => {
+        option.addEventListener('click', () => {
+          playerOptions.forEach(opt => opt.classList.remove('selected'));
+          option.classList.add('selected');
+          computerPlayersCount = parseInt(option.getAttribute('data-players'));
+        });
+      });
+      
+      // Start game button
+      document.getElementById('startBtn').addEventListener('click', startGame);
+      
+      // Select first option by default
+      playerOptions[0].classList.add('selected');
+    }
+    
+    // Start the game with selected number of players
+    function startGame() {
+      document.getElementById('playerSelection').style.display = 'none';
+      document.getElementById('gameBoard').style.display = 'block';
+      
+      // Initialize players
+      players = [
+        { name: "You", cards: [], isComputer: false, element: null }
+      ];
+      
+      // Add computer players
+      for (let i = 0; i < computerPlayersCount; i++) {
+        players.push({ 
+          name: `Computer ${i+1}`, 
+          cards: [], 
+          isComputer: true, 
+          element: document.getElementById(`computerPlayer${i+1}`),
+          cardsElement: document.getElementById(`computerCards${i+1}`)
+        });
+      }
+      
+      // Hide unused computer players
+      for (let i = computerPlayersCount + 1; i <= 3; i++) {
+        document.getElementById(`computerPlayer${i}`).style.display = 'none';
+      }
+      
+      // Build and shuffle deck
+      buildDeck();
+      shuffleDeck();
+      
+      // Deal cards
+      for (let player of players) {
+        player.cards = [];
+        for (let i = 0; i < 7; i++) {
+          player.cards.push(draw());
+        }
+      }
+      
+      // Start with a non-wild card
+      do {
+        pile = draw();
+      } while (pile.type === "wild");
+      
+      currentPlayerIndex = 0;
+      gameActive = true;
+      
+      updateUI();
+      
+      // If first player is computer, start their turn
+      if (players[currentPlayerIndex].isComputer) {
+        setTimeout(computerTurn, 1000);
+      }
+    }
+    
+    // Build the deck with numbers and special cards
+    function buildDeck() {
+      deck = [];
+      
+      // Number cards (0-9)
+      for(let c of colors) {
+        // One 0 card per color
+        deck.push({color: c, value: 0, type: "number"});
+        
+        // Two of each 1-9 per color
+        for(let n = 1; n <= 9; n++) {
+          deck.push({color: c, value: n, type: "number"});
+          deck.push({color: c, value: n, type: "number"});
+        }
+        
+        // Special cards (two of each per color)
+        for(let s of specialCards) {
+          deck.push({color: c, value: s, type: "special"});
+          deck.push({color: c, value: s, type: "special"});
+        }
+      }
+      
+      // Wild cards (4 of each)
+      for(let i = 0; i < 4; i++) {
+        deck.push({color: "wild", value: "wild", type: "wild"});
+        deck.push({color: "wild", value: "draw4", type: "wild"});
+      }
+    }
+
+    // Draw a card from the deck
+    function draw() {
+      if (deck.length === 0) {
+        // Reshuffle if deck is empty (except the current pile card)
+        const currentPile = pile;
+        const allCards = players.flatMap(player => player.cards);
+        deck = [...allCards];
+        players.forEach(player => player.cards = []);
+        buildDeck();
+        deck = deck.filter(card => card !== currentPile);
+        shuffleDeck();
+        pile = currentPile;
+      }
+      return deck.splice(Math.floor(Math.random() * deck.length), 1)[0];
+    }
+
+    // Shuffle the deck
+    function shuffleDeck() {
+      for (let i = deck.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [deck[i], deck[j]] = [deck[j], deck[i]];
+      }
+    }
+
+    // Update the game UI
+    function updateUI() {
+      // Update game info
+      const gameInfoElement = document.getElementById("gameInfo");
+      gameInfoElement.innerHTML = "";
+      
+      players.forEach((player, index) => {
+        const playerInfo = document.createElement("div");
+        playerInfo.className = `player-info ${index === currentPlayerIndex ? "active" : ""}`;
+        
+        const playerName = document.createElement("div");
+        playerName.className = "player-name";
+        if (player.isComputer) {
+          playerName.innerHTML = `<i class="fas fa-robot"></i> ${player.name}`;
+        } else {
+          playerName.innerHTML = `<i class="fas fa-user"></i> ${player.name}`;
+        }
+        
+        const cardCount = document.createElement("div");
+        cardCount.className = "card-count";
+        cardCount.textContent = player.cards.length;
+        
+        playerInfo.appendChild(playerName);
+        playerInfo.appendChild(cardCount);
+        gameInfoElement.appendChild(playerInfo);
+      });
+      
+      // Update player hand
+      const playerHandElement = document.getElementById("playerHand");
+      playerHandElement.innerHTML = "";
+      
+      const humanPlayer = players[0];
+      humanPlayer.cards.forEach((card, i) => {
+        const cardElement = createCardElement(card, i);
+        playerHandElement.appendChild(cardElement);
+      });
+      
+      // Update computer players' card displays
+      for (let i = 1; i < players.length; i++) {
+        const player = players[i];
+        if (player.cardsElement) {
+          player.cardsElement.innerHTML = "";
+          for (let j = 0; j < player.cards.length; j++) {
+            const cardElement = document.createElement("div");
+            cardElement.className = "computer-card";
+            player.cardsElement.appendChild(cardElement);
+          }
+        }
+      }
+      
+      // Update pile
+      const pileElement = document.getElementById("pile");
+      pileElement.className = `pile ${pile.color}`;
+      pileElement.innerHTML = "";
+      
+      const pileValue = document.createElement("div");
+      pileValue.className = "card-value";
+      
+      if (pile.type === "number") {
+        pileValue.textContent = pile.value;
+      } else if (pile.type === "special") {
+        if (pile.value === "skip") pileValue.innerHTML = "<i class='fas fa-ban'></i>";
+        else if (pile.value === "reverse") pileValue.innerHTML = "<i class='fas fa-exchange-alt'></i>";
+        else if (pile.value === "draw2") pileValue.textContent = "+2";
+      } else if (pile.type === "wild") {
+        if (pile.value === "wild") pileValue.innerHTML = "<i class='fas fa-star'></i>";
+        else if (pile.value === "draw4") pileValue.textContent = "+4";
+      }
+      
+      const pileColor = document.createElement("div");
+      pileColor.className = "current-color";
+      pileColor.textContent = pile.color.toUpperCase();
+      
+      pileElement.appendChild(pileValue);
+      pileElement.appendChild(pileColor);
+    }
+    
+    // Create a card element
+    function createCardElement(card, index) {
+      const cardElement = document.createElement("div");
+      cardElement.className = `card ${card.color}`;
+      
+      const valueElement = document.createElement("div");
+      valueElement.className = "card-value";
+      
+      if (card.type === "number") {
+        valueElement.textContent = card.value;
+      } else if (card.type === "special") {
+        if (card.value === "skip") valueElement.innerHTML = "<i class='fas fa-ban'></i>";
+        else if (card.value === "reverse") valueElement.innerHTML = "<i class='fas fa-exchange-alt'></i>";
+        else if (card.value === "draw2") valueElement.textContent = "+2";
+      } else if (card.type === "wild") {
+        if (card.value === "wild") valueElement.innerHTML = "<i class='fas fa-star'></i>";
+        else if (card.value === "draw4") valueElement.textContent = "+4";
+      }
+      
+      cardElement.appendChild(valueElement);
+      cardElement.onclick = () => playCard(index);
+      
+      return cardElement;
+    }
+
+    // Check if a card can be played
+    function canPlayCard(card) {
+      return card.color === pile.color || 
+             card.value === pile.value || 
+             card.type === "wild";
+    }
+
+    // Play a card from player's hand
+    function playCard(index) {
+      if (!gameActive || players[currentPlayerIndex].isComputer) return;
+      
+      const card = players[0].cards[index];
+      
+      if (canPlayCard(card)) {
+        // Animate card throw
+        const cardElement = document.querySelectorAll('#playerHand .card')[index];
+        cardElement.classList.add('throwing');
+        
+        // Set random throw parameters
+        cardElement.style.setProperty('--throwX', `${Math.random() * 40 - 20}px`);
+        cardElement.style.setProperty('--throwY', `${Math.random() * -100 - 50}px`);
+        cardElement.style.setProperty('--throwRotate', `${Math.random() * 30 - 15}deg`);
+        
+        setTimeout(() => {
+          cardElement.classList.remove('throwing');
+          
+          pile = card;
+          players[0].cards.splice(index, 1);
+          
+          // Handle special cards
+          handleSpecialCard(card);
+          
+          // Check for win
+          if (players[0].cards.length === 0) {
+            showMessage("You win! 🎉");
+            gameActive = false;
+            return;
+          }
+          
+          // Next player's turn
+          nextTurn();
+          updateUI();
+        }, 800);
+      }
+    }
+
+    // Handle special card effects
+    function handleSpecialCard(card) {
+      if (card.type === "special") {
+        if (card.value === "skip") {
+          // Skip next player
+          nextTurn();
+        } else if (card.value === "reverse") {
+          // Reverse game direction
+          gameDirection *= -1;
+          // With only 2 players, reverse works like skip
+          if (players.length === 2) {
+            nextTurn();
+          }
+        } else if (card.value === "draw2") {
+          // Next player draws 2 cards
+          nextPlayer();
+          for (let i = 0; i < 2; i++) {
+            players[currentPlayerIndex].cards.push(draw());
+          }
+          nextTurn();
+        }
+      } else if (card.type === "wild") {
+        if (card.value === "draw4") {
+          // Next player draws 4 cards
+          nextPlayer();
+          for (let i = 0; i < 4; i++) {
+            players[currentPlayerIndex].cards.push(draw());
+          }
+          nextTurn();
+        }
+        
+        // For wild cards, randomly assign a color
+        const colorChoices = colors.filter(c => c !== "wild");
+        pile.color = colorChoices[Math.floor(Math.random() * colorChoices.length)];
+      }
+    }
+
+    // Draw a card from the deck
+    function drawCard() {
+      if (!gameActive || players[currentPlayerIndex].isComputer) return;
+      
+      players[0].cards.push(draw());
+      nextTurn();
+      updateUI();
+    }
+
+    // Move to the next player
+    function nextPlayer() {
+      currentPlayerIndex = (currentPlayerIndex + gameDirection + players.length) % players.length;
+    }
+    
+    // Move to the next turn
+    function nextTurn() {
+      nextPlayer();
+      
+      if (players[currentPlayerIndex].isComputer) {
+        setTimeout(computerTurn, 1000);
+      }
+      
+      updateUI();
+    }
+
+    // Computer's turn logic
+    function computerTurn() {
+      if (!gameActive) return;
+      
+      const computer = players[currentPlayerIndex];
+      let played = false;
+      
+      // Try to find a playable card
+      for (let i = 0; i < computer.cards.length; i++) {
+        if (canPlayCard(computer.cards[i])) {
+          pile = computer.cards[i];
+          computer.cards.splice(i, 1);
+          played = true;
+          
+          // Handle special card
+          handleSpecialCard(pile);
+          
+          // Check for win
+          if (computer.cards.length === 0) {
+            showMessage(`${computer.name} wins! 🤖`);
+            gameActive = false;
+            return;
+          }
+          
+          break;
+        }
+      }
+      
+      // If no playable card, draw one
+      if (!played) {
+        computer.cards.push(draw());
+      }
+      
+      // Next player's turn
+      nextTurn();
+      updateUI();
+    }
+
+    // Call UNO when player has one card
+    function callUno() {
+      if (players[0].cards.length === 1) {
+        showMessage("UNO! 👍");
+      } else {
+        showMessage("You can only call UNO with one card! 👎");
+      }
+    }
+
+    // Restart the game
+    function restartGame() {
+      document.getElementById('playerSelection').style.display = 'block';
+      document.getElementById('gameBoard').style.display = 'none';
+      gameActive = false;
+    }
+
+    // Show a message
+    function showMessage(text) {
+      const messageElement = document.getElementById("message");
+      messageElement.textContent = text;
+      messageElement.style.display = "block";
+      
+      setTimeout(() => {
+        messageElement.style.display = "none";
+      }, 2000);
+    }
+
+    // Initialize the game
+    window.onload = initGame;
+  </script>
+</body>
+</html>
